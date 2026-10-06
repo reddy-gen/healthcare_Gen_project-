@@ -1,0 +1,25 @@
+{
+  "project": "Healthcare GenAI Data Platform",
+  "version": "2.0",
+  "container": "healthcare",
+  "active_tables": [
+    "patients",
+    "encounters",
+    "conditions",
+    "providers",
+    "payers",
+    "procedures"
+  ],
+  "zones": {
+    "source": "source",
+    "raw": "raw",
+    "ingested": "ingested",
+    "archive": "archive",
+    "bronze": "bronze",
+    "silver": "silver",
+    "gold": "gold",
+    "control": "control"
+  },
+  "flow": "SOURCE -> RAW -> CONTROL CHECK -> INGESTED -> DATABRICKS BRONZE/SILVER/GOLD -> ARCHIVE",
+  "source_of_truth": "control/file_control Delta table"
+}

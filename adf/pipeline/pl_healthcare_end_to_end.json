@@ -1,0 +1,198 @@
+{
+  "name": "pl_healthcare_end_to_end",
+  "properties": {
+    "parameters": {
+      "tables": {
+        "type": "array",
+        "defaultValue": [
+          "patients",
+          "encounters",
+          "conditions",
+          "providers",
+          "payers",
+          "procedures"
+        ]
+      },
+      "lake_root": {
+        "type": "string",
+        "defaultValue": "abfss://healthcare@<storageaccount>.dfs.core.windows.net"
+      }
+    },
+    "variables": {
+      "run_date": { "type": "String" },
+      "run_id": { "type": "String" }
+    },
+    "activities": [
+      {
+        "name": "SetRunDate",
+        "type": "SetVariable",
+        "typeProperties": {
+          "variableName": "run_date",
+          "value": { "value": "@formatDateTime(utcnow(),'yyyy-MM-dd')", "type": "Expression" }
+        }
+      },
+      {
+        "name": "SetRunId",
+        "type": "SetVariable",
+        "dependsOn": [
+          { "activity": "SetRunDate", "dependencyConditions": ["Succeeded"] }
+        ],
+        "typeProperties": {
+          "variableName": "run_id",
+          "value": { "value": "@pipeline().RunId", "type": "Expression" }
+        }
+      },
+      {
+        "name": "SourceToRaw",
+        "type": "ForEach",
+        "dependsOn": [
+          { "activity": "SetRunId", "dependencyConditions": ["Succeeded"] }
+        ],
+        "typeProperties": {
+          "items": { "value": "@pipeline().parameters.tables", "type": "Expression" },
+          "isSequential": false,
+          "batchCount": 4,
+          "activities": [
+            {
+              "name": "CopySourceToRaw",
+              "type": "Copy",
+              "inputs": [
+                {
+                  "referenceName": "ds_source_binary",
+                  "type": "DatasetReference",
+                  "parameters": { "table": "@item()" }
+                }
+              ],
+              "outputs": [
+                {
+                  "referenceName": "ds_raw_binary",
+                  "type": "DatasetReference",
+                  "parameters": {
+                    "table": "@item()",
+                    "run_date": "@variables('run_date')",
+                    "run_id": "@variables('run_id')"
+                  }
+                }
+              ],
+              "typeProperties": {
+                "source": {
+                  "type": "BinarySource",
+                  "storeSettings": {
+                    "type": "AzureBlobFSReadSettings",
+                    "recursive": false
+                  }
+                },
+                "sink": {
+                  "type": "BinarySink",
+                  "storeSettings": {
+                    "type": "AzureBlobFSWriteSettings"
+                  }
+                }
+              },
+              "policy": {
+                "retry": 2,
+                "retryIntervalInSeconds": 30,
+                "timeout": "0.01:00:00"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "ControlAndIngest",
+        "type": "DatabricksNotebook",
+        "dependsOn": [
+          { "activity": "SourceToRaw", "dependencyConditions": ["Succeeded"] }
+        ],
+        "linkedServiceName": {
+          "referenceName": "ls_databricks",
+          "type": "LinkedServiceReference"
+        },
+        "typeProperties": {
+          "notebookPath": "/Repos/healthcare_Gen_project-/databricks/01_control_and_ingest",
+          "baseParameters": {
+            "lake_root": { "value": "@pipeline().parameters.lake_root", "type": "Expression" },
+            "run_id": { "value": "@variables('run_id')", "type": "Expression" },
+            "run_date": { "value": "@variables('run_date')", "type": "Expression" }
+          }
+        }
+      },
+      {
+        "name": "Bronze",
+        "type": "DatabricksNotebook",
+        "dependsOn": [
+          { "activity": "ControlAndIngest", "dependencyConditions": ["Succeeded"] }
+        ],
+        "linkedServiceName": {
+          "referenceName": "ls_databricks",
+          "type": "LinkedServiceReference"
+        },
+        "typeProperties": {
+          "notebookPath": "/Repos/healthcare_Gen_project-/databricks/02_bronze_ingest",
+          "baseParameters": {
+            "lake_root": { "value": "@pipeline().parameters.lake_root", "type": "Expression" },
+            "run_id": { "value": "@variables('run_id')", "type": "Expression" },
+            "run_date": { "value": "@variables('run_date')", "type": "Expression" }
+          }
+        }
+      },
+      {
+        "name": "Silver",
+        "type": "DatabricksNotebook",
+        "dependsOn": [
+          { "activity": "Bronze", "dependencyConditions": ["Succeeded"] }
+        ],
+        "linkedServiceName": {
+          "referenceName": "ls_databricks",
+          "type": "LinkedServiceReference"
+        },
+        "typeProperties": {
+          "notebookPath": "/Repos/healthcare_Gen_project-/databricks/03_silver_transform",
+          "baseParameters": {
+            "lake_root": { "value": "@pipeline().parameters.lake_root", "type": "Expression" },
+            "run_id": { "value": "@variables('run_id')", "type": "Expression" },
+            "run_date": { "value": "@variables('run_date')", "type": "Expression" }
+          }
+        }
+      },
+      {
+        "name": "Gold",
+        "type": "DatabricksNotebook",
+        "dependsOn": [
+          { "activity": "Silver", "dependencyConditions": ["Succeeded"] }
+        ],
+        "linkedServiceName": {
+          "referenceName": "ls_databricks",
+          "type": "LinkedServiceReference"
+        },
+        "typeProperties": {
+          "notebookPath": "/Repos/healthcare_Gen_project-/databricks/04_gold_model",
+          "baseParameters": {
+            "lake_root": { "value": "@pipeline().parameters.lake_root", "type": "Expression" },
+            "run_id": { "value": "@variables('run_id')", "type": "Expression" },
+            "run_date": { "value": "@variables('run_date')", "type": "Expression" }
+          }
+        }
+      },
+      {
+        "name": "ArchiveProcessed",
+        "type": "DatabricksNotebook",
+        "dependsOn": [
+          { "activity": "Gold", "dependencyConditions": ["Succeeded"] }
+        ],
+        "linkedServiceName": {
+          "referenceName": "ls_databricks",
+          "type": "LinkedServiceReference"
+        },
+        "typeProperties": {
+          "notebookPath": "/Repos/healthcare_Gen_project-/databricks/05_archive_processed",
+          "baseParameters": {
+            "lake_root": { "value": "@pipeline().parameters.lake_root", "type": "Expression" },
+            "run_id": { "value": "@variables('run_id')", "type": "Expression" },
+            "run_date": { "value": "@variables('run_date')", "type": "Expression" }
+          }
+        }
+      }
+    ]
+  }
+}
