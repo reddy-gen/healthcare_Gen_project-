@@ -2,7 +2,7 @@
 
 A production-style learning project using **ADF + ADLS Gen2 + Databricks + PySpark + Delta Lake + optional GenAI**.
 
-> Synthetic healthcare data only. Do not use real patient/PHI data.
+> Synthetic healthcare data only. Do not use real patient/PHI data.s
 
 ## Final architecture
 
