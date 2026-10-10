@@ -1,0 +1,37 @@
+{
+	"name": "ds_raw_binary",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adls",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"table": {
+				"type": "string"
+			},
+			"run_date": {
+				"type": "string"
+			},
+			"run_id": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@{dataset().table}.csv",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "raw/table=@{dataset().table}/received_date=@{dataset().run_date}/run_id=@{dataset().run_id}",
+					"type": "Expression"
+				},
+				"fileSystem": "healthcare"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

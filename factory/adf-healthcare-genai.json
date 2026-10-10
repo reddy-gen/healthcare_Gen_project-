@@ -1,0 +1,15 @@
+{
+	"name": "adf-healthcare-genai",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "southindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "8cad48f2-457f-4a2b-b285-54be8f90f788",
+		"tenantId": "44ed6051-c4ff-4fb2-a10d-4b419df47c3f"
+	}
+}

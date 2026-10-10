@@ -1,0 +1,11 @@
+{
+	"name": "ls_keyvault",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://kv-healthcare-genai-001.vault.azure.net/"
+		}
+	}
+}
