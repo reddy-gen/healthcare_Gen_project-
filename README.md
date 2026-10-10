@@ -198,7 +198,7 @@ Import/deploy:
 ```text
 adf/linkedService/
 adf/dataset/
-adf/pipeline/pl_healthcare_end_to_end.json
+adf/pipeline/pl_healthcare_master.json
 ```
 
 The pipeline parameters include:

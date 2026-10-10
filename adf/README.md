@@ -8,7 +8,7 @@ linkedService/ls_keyvault.json
 linkedService/ls_databricks.json
 dataset/ds_source_binary.json
 dataset/ds_raw_binary.json
-pipeline/pl_healthcare_end_to_end.json
+pipeline/pl_healthcare_master.json
 ```
 
 The older `landing` pipeline from v1 is superseded by the v2 pipeline.

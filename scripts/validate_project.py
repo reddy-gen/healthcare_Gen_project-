@@ -6,7 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 required = [
     "project_config.json",
     "README.md",
-    "adf/pipeline/pl_healthcare_end_to_end.json",
+    "adf/pipeline/pl_healthcare_master.json",
     "adf/dataset/ds_source_binary.json",
     "adf/dataset/ds_raw_binary.json",
     "adf/linkedService/ls_adls.json",
@@ -25,7 +25,7 @@ if missing:
 
 for p in [
     ROOT / "project_config.json",
-    ROOT / "adf/pipeline/pl_healthcare_end_to_end.json"
+    ROOT / "adf/pipeline/pl_healthcare_master.json"
 ]:
     json.loads(p.read_text(encoding="utf-8"))
 

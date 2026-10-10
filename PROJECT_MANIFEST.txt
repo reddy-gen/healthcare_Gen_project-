@@ -7,7 +7,7 @@ adf/dataset/ds_source_binary.json
 adf/linkedService/ls_adls.json
 adf/linkedService/ls_databricks.json
 adf/linkedService/ls_keyvault.json
-adf/pipeline/pl_healthcare_end_to_end.json
+adf/pipeline/pl_healthcare_master.json
 databricks/00_config.py
 databricks/01_bronze_ingest.py
 databricks/01_control_and_ingest.py
